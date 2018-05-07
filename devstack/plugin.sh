@@ -14,10 +14,10 @@ if is_service_enabled apmec; then
         # Perform installation of service source
         echo_summary "Installing Apmec"
         install_apmec
-        echo_summary "Installing tosca parser"
-        mec_tosca_parser_install
-        echo_summary "Installing heat translator"
-        mec_heat_translator_install
+#        echo_summary "Installing tosca parser"
+#        mec_tosca_parser_install
+#        echo_summary "Installing heat translator"
+#        mec_heat_translator_install
 
     elif [[ "$1" == "stack" && "$2" == "post-config" ]]; then
         # Configure after the other layer 1 and 2 services have been configured

@@ -27,8 +27,6 @@
 
 # Apmec
 # ---------------
-CUSTOM_BASE="https://pineunity:Doantung92*@github.com/pineunity"
-EXTRA_CUSTOM_BASE="git+https://pineunity:Doantung92*@github.com/pineunity"
 #LIB_DEST=/usr/local/lib/python2.7/dist-packages
 
 # Save trace setting
@@ -43,19 +41,19 @@ if is_ssl_enabled_service "apmec" || is_service_enabled tls-proxy; then
 fi
 
 # Set up default directories
-GITREPO["apmec-horizon"]=${APMECHORIZON_REPO:-${CUSTOM_BASE}/apmec-horizon.git}
+GITREPO["apmec-horizon"]=${APMECHORIZON_REPO:-${GIT_BASE}/apmec-horizon.git}
 GITBRANCH["apmec-horizon"]=${APMECHORIZON_BRANCH:-master}
 GITDIR["apmec-horizon"]=$DEST/apmec-horizon
 
-GITREPO["python-apmecclient"]=${APMECHORIZON_REPO:-${CUSTOM_BASE}/python-apmecclient.git}
+GITREPO["python-apmecclient"]=${APMECHORIZON_REPO:-${GIT_BASE}/python-apmecclient.git}
 GITBRANCH["python-apmecclient"]=${APMECHORIZON_BRANCH:-apmec-nfv}
 GITDIR["python-apmecclient"]=$DEST/python-apmecclient
 
-#GITREPO["mec-tosca-parser"]=${APMECHORIZON_REPO:-${CUSTOM_BASE}/mec-tosca-parser.git}
+#GITREPO["mec-tosca-parser"]=${APMECHORIZON_REPO:-${GIT_BASE}/mec-tosca-parser.git}
 #GITBRANCH["mec-tosca-parser"]=${APMECHORIZON_BRANCH:-master}
 #GITDIR["mec-tosca-parser"]=/$LIB_DEST/toscaparser
 
-#GITREPO["mec-heat-translator"]=${APMECHORIZON_REPO:-${CUSTOM_BASE}/mec-heat-translator.git}
+#GITREPO["mec-heat-translator"]=${APMECHORIZON_REPO:-${GIT_BASE}/mec-heat-translator.git}
 #GITBRANCH["mec-heat-translator"]=${APMECHORIZON_BRANCH:-master}
 #GITDIR["mec-heat-translator"]=$LIB_DEST/heat_translator
 
@@ -334,14 +332,14 @@ function _apmec_setup_keystone {
     configure_auth_token_middleware $conf_file $APMEC_ADMIN_USERNAME $APMEC_AUTH_CACHE_DIR $section
 }
 
-function mec_tosca_parser_install {
-   sudo pip install ${EXTRA_CUSTOM_BASE}/mec-tosca-parser.git
-}
+#function mec_tosca_parser_install {
+#   sudo pip install ${EXTRA_CUSTOM_BASE}/mec-tosca-parser.git
+#}
 
-function mec_heat_translator_install {
-   sudo pip install ${EXTRA_CUSTOM_BASE}/mec-heat-translator.git
+#function mec_heat_translator_install {
+#   sudo pip install ${EXTRA_CUSTOM_BASE}/mec-heat-translator.git
 
-}
+#}
 
 function apmec_horizon_install {
     git_clone_by_name "apmec-horizon"

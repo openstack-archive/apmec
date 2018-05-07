@@ -1,0 +1,10 @@
+{
+ image_name: 'cirros-0.3.5-x86_64-disk',
+ flavor: 'm1.tiny',
+ zone: 'nova',
+ network: 'net_mgmt',
+ management: 'true',
+ pkt_in_network: 'net0',
+ pkt_out_network: 'net1',
+ vendor: 'apmec'
+}

@@ -1,0 +1,27 @@
+[[local|localrc]]
+############################################################
+# Customize the following HOST_IP based on your installation
+############################################################
+HOST_IP=127.0.0.1
+SERVICE_HOST=127.0.0.1
+SERVICE_PASSWORD=devstack
+ADMIN_PASSWORD=devstack
+SERVICE_TOKEN=devstack
+DATABASE_PASSWORD=root
+RABBIT_PASSWORD=password
+ENABLE_HTTPD_MOD_WSGI_SERVICES=True
+KEYSTONE_USE_MOD_WSGI=True
+
+# Logging
+LOGFILE=$DEST/logs/stack.sh.log
+VERBOSE=True
+ENABLE_DEBUG_LOG_LEVEL=True
+ENABLE_VERBOSE_LOG_LEVEL=True
+GIT_BASE=${GIT_BASE:-git://git.openstack.org}
+
+APMEC_MODE=standalone
+USE_BARBICAN=True
+enable_plugin networking-sfc ${GIT_BASE}/openstack/networking-sfc
+enable_plugin barbican ${GIT_BASE}/openstack/barbican
+enable_plugin mistral ${GIT_BASE}/openstack/mistral
+enable_plugin apmec ${GIT_BASE}/openstack/apmec

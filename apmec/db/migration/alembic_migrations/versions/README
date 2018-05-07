@@ -1,0 +1,5 @@
+This directory contains the migration scripts for the Apmec project.  Please
+see the README in apmec/db/migration on how to use and generate new
+migrations.
+
+

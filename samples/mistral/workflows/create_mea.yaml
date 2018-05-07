@@ -1,0 +1,53 @@
+---
+version: '2.0'
+
+std.create_mea:
+  type: direct
+
+  description: |
+    Create a MEA and waits till MEA is active.
+
+  input:
+    - body
+  output:
+    mea_id: <% $.mea_id %>
+    vim_id: <% $.vim_id %>
+    mgmt_url: <% $.mgmt_url %>
+    status: <% $.status %>
+
+  task-defaults:
+    on-error:
+      - delete_mea
+
+  tasks:
+    create_mea:
+      description: Request to create a MEA.
+      action: apmec.create_mea body=<% $.body %>
+      input:
+        body: <% $.body %>
+      publish:
+        mea_id: <% task(create_mea).result.mea.id %>
+        vim_id: <% task(create_mea).result.mea.vim_id %>
+        mgmt_url: <% task(create_mea).result.mea.mgmt_url %>
+        status: <% task(create_mea).result.mea.status %>
+      on-success:
+        - wait_mea_active
+
+    wait_mea_active:
+      description: Waits till MEA is ACTIVE.
+      action: apmec.show_mea mea=<% $.mea_id %>
+      retry:
+        count: 10
+        delay: 10
+        break-on: <% $.status = 'ACTIVE' %>
+        break-on: <% $.status = 'ERROR' %>
+        continue-on: <% $.status = 'PENDING_CREATE' %>
+      publish:
+        mgmt_url: <% task(wait_mea_active).result.mea.mgmt_url %>
+        status: <% task(wait_mea_active).result.mea.status %>
+      on-success:
+        - delete_mea: <% $.status = 'ERROR' %>
+
+    delete_mea:
+      description: Request to delete a MEA.
+      action: apmec.delete_mea mea=<% $.mea_id %>

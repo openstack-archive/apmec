@@ -1,0 +1,82 @@
+tosca_definitions_version: tosca_simple_profile_for_mec_1_0_0
+description: Demo example
+
+metadata:
+ template_name: sample-tosca-mead
+
+topology_template:
+  node_templates:
+    VDU1:
+      type: tosca.nodes.mec.VDU.Apmec
+      capabilities:
+        mec_compute:
+          properties:
+            disk_size: 1 GB
+            mem_size: 512 MB
+            num_cpus: 2
+      properties:
+        image: cirros-0.3.5-x86_64-disk
+        mgmt_driver: noop
+        availability_zone: nova
+        metadata: {metering.mea: SG1}
+
+    CP1:
+      type: tosca.nodes.mec.CP.Apmec
+      properties:
+        management: true
+        anti_spoofing_protection: false
+      requirements:
+        - virtualLink:
+            node: VL1
+        - virtualBinding:
+            node: VDU1
+
+    VL1:
+      type: tosca.nodes.mec.VL
+      properties:
+        network_name: net_mgmt
+        vendor: Apmec
+
+  policies:
+    - SP1:
+        type: tosca.policies.apmec.Scaling
+        targets: [VDU1]
+        properties:
+          increment: 1
+          cooldown: 60
+          min_instances: 1
+          max_instances: 3
+          default_instances: 2
+
+    - vdu_cpu_usage_monitoring_policy:
+        type: tosca.policies.apmec.Alarming
+        triggers:
+            vdu_hcpu_usage_scaling_out:
+                event_type:
+                    type: tosca.events.resource.utilization
+                    implementation: ceilometer
+                meter_name: cpu_util
+                condition:
+                    threshold: 50
+                    constraint: utilization greater_than 50%
+                    period: 600
+                    evaluations: 1
+                    method: average
+                    comparison_operator: gt
+                metadata: SG1
+                action: [SP1]
+
+            vdu_hcpu_usage_scaling_in:
+                event_type:
+                    type: tosca.events.resource.utilization
+                    implementation: ceilometer
+                meter_name: cpu_util
+                condition:
+                    threshold: 10
+                    constraint: utilization less_than 10%
+                    period: 600
+                    evaluations: 1
+                    method: average
+                    comparison_operator: lt
+                metadata: SG1
+                action: [SP1]

@@ -1,0 +1,16 @@
+---
+version: '2.0'
+
+std.delete_mead:
+  type: direct
+
+  description: |
+    Delete a MEAD.
+
+  input:
+    - mead_id
+
+  tasks:
+    delete_mead:
+      description: Request to delete a MEAD.
+      action: apmec.delete_mead mead=<% $.mead_id %>

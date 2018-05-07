@@ -1,0 +1,482 @@
+#!/bin/bash
+#
+# lib/apmec
+# functions - functions specific to apmec
+
+# Dependencies:
+# ``functions`` file
+# ``DEST`` must be defined
+# ``STACK_USER`` must be defined
+
+# ``stack.sh`` calls the entry points in this order:
+#
+# - install_apmec
+# - configure_apmec
+# - create_apmec_accounts
+# - init_apmec
+# - start_apmec
+# - apmec_horizon_install
+# - apmec_client_install
+# - apmec_create_initial_network
+
+#
+# ``unstack.sh`` calls the entry points in this order:
+#
+# - stop_apmec
+# - cleanup_apmec
+
+# Apmec
+# ---------------
+CUSTOM_BASE="https://pineunity:Doantung92*@github.com/pineunity"
+EXTRA_CUSTOM_BASE="git+https://pineunity:Doantung92*@github.com/pineunity"
+#LIB_DEST=/usr/local/lib/python2.7/dist-packages
+
+# Save trace setting
+XTRACE=$(set +o | grep xtrace)
+set +o xtrace
+
+# Defaults
+# --------
+
+if is_ssl_enabled_service "apmec" || is_service_enabled tls-proxy; then
+    APMEC_PROTOCOL="https"
+fi
+
+# Set up default directories
+GITREPO["apmec-horizon"]=${APMECHORIZON_REPO:-${CUSTOM_BASE}/apmec-horizon.git}
+GITBRANCH["apmec-horizon"]=${APMECHORIZON_BRANCH:-master}
+GITDIR["apmec-horizon"]=$DEST/apmec-horizon
+
+GITREPO["python-apmecclient"]=${APMECHORIZON_REPO:-${CUSTOM_BASE}/python-apmecclient.git}
+GITBRANCH["python-apmecclient"]=${APMECHORIZON_BRANCH:-apmec-nfv}
+GITDIR["python-apmecclient"]=$DEST/python-apmecclient
+
+#GITREPO["mec-tosca-parser"]=${APMECHORIZON_REPO:-${CUSTOM_BASE}/mec-tosca-parser.git}
+#GITBRANCH["mec-tosca-parser"]=${APMECHORIZON_BRANCH:-master}
+#GITDIR["mec-tosca-parser"]=/$LIB_DEST/toscaparser
+
+#GITREPO["mec-heat-translator"]=${APMECHORIZON_REPO:-${CUSTOM_BASE}/mec-heat-translator.git}
+#GITBRANCH["mec-heat-translator"]=${APMECHORIZON_BRANCH:-master}
+#GITDIR["mec-heat-translator"]=$LIB_DEST/heat_translator
+
+
+APMEC_DIR=$DEST/apmec
+APMEC_AUTH_CACHE_DIR=${APMEC_AUTH_CACHE_DIR:-/var/cache/apmec}
+
+# Support entry points installation of console scripts
+if [[ -d $APMEC_DIR/bin/apmec-server ]]; then
+    APMEC_BIN_DIR=$APMEC_DIR/bin
+else
+    APMEC_BIN_DIR=$(get_python_exec_prefix)
+fi
+
+APMEC_CONF_DIR=/etc/apmec
+APMEC_CONF=$APMEC_CONF_DIR/apmec.conf
+
+# Default name for Apmec database
+APMEC_DB_NAME=${APMEC_DB_NAME:-apmec}
+# Default Apmec Port
+APMEC_PORT=${APMEC_PORT:-9896}
+# Default Apmec Internal Port when using TLS proxy
+APMEC_PORT_INT=${APMEC_PORT_INT:-19896}       # TODO(FIX)
+# Default Apmec Host
+APMEC_HOST=${APMEC_HOST:-$SERVICE_HOST}
+# Default protocol
+APMEC_PROTOCOL=${APMEC_PROTOCOL:-$SERVICE_PROTOCOL}
+# Default admin username
+APMEC_ADMIN_USERNAME=${APMEC_ADMIN_USERNAME:-apmec}
+# Default auth strategy
+APMEC_AUTH_STRATEGY=${APMEC_AUTH_STRATEGY:-keystone}
+APMEC_USE_ROOTWRAP=${APMEC_USE_ROOTWRAP:-True}
+
+APMEC_RR_CONF_FILE=$APMEC_CONF_DIR/rootwrap.conf
+if [[ "$APMEC_USE_ROOTWRAP" == "False" ]]; then
+    APMEC_RR_COMMAND="sudo"
+else
+    APMEC_ROOTWRAP=$(get_rootwrap_location apmec)
+    APMEC_RR_COMMAND="sudo $APMEC_ROOTWRAP $APMEC_RR_CONF_FILE"
+fi
+
+APMEC_NOVA_URL=${APMEC_NOVA_URL:-http://127.0.0.1:8774/v2}
+APMEC_NOVA_CA_CERTIFICATES_FILE=${APMEC_NOVA_CA_CERTIFICATES_FILE:-}
+APMEC_NOVA_API_INSECURE=${APMEC_NOVA_API_INSECURE:-False}
+
+# Tell Tempest this project is present
+# TEMPEST_SERVICES+=,apmec
+
+HEAT_CONF_DIR=/etc/heat
+
+# Functions
+# ---------
+# Test if any Apmec services are enabled
+# is_apmec_enabled
+function is_apmec_enabled {
+    [[ ,${ENABLED_SERVICES} =~ ,"apmec" ]] && return 0
+    return 1
+}
+
+# create_apmec_cache_dir() - Part of the _apmec_setup_keystone() process
+function create_apmec_cache_dir {
+    # Create cache dir
+    sudo install -d -o $STACK_USER $APMEC_AUTH_CACHE_DIR
+    rm -f $APMEC_AUTH_CACHE_DIR/*
+}
+
+# create_apmec_accounts() - Set up common required apmec accounts
+
+# Tenant               User       Roles
+# ------------------------------------------------------------------
+# service              apmec    admin        # if enabled
+
+# Migrated from keystone_data.sh
+function create_apmec_accounts {
+    if is_service_enabled apmec; then
+        create_service_user "apmec"
+        get_or_create_role "advsvc"
+        create_service_user "apmec" "advsvc"
+
+        local apmec_service=$(get_or_create_service "apmec" \
+            "mec-orchestration" "Apmec MEC Orchestration Service")
+        get_or_create_endpoint $apmec_service \
+            "$REGION_NAME" \
+            "$APMEC_PROTOCOL://$SERVICE_HOST:$APMEC_PORT/" \
+            "$APMEC_PROTOCOL://$SERVICE_HOST:$APMEC_PORT/" \
+            "$APMEC_PROTOCOL://$SERVICE_HOST:$APMEC_PORT/"
+    fi
+}
+
+# stack.sh entry points
+# ---------------------
+
+# init_apmec() - Initialize databases, etc.
+function init_apmec {
+    recreate_database $APMEC_DB_NAME
+
+    # Run Apmec db migrations
+    $APMEC_BIN_DIR/apmec-db-manage --config-file $APMEC_CONF upgrade head
+}
+
+# install_apmec() - Collect source and prepare
+function install_apmec {
+    setup_develop $APMEC_DIR
+}
+
+function start_apmec {
+    local cfg_file_options="--config-file $APMEC_CONF"
+    local service_port=$APMEC_PORT
+    local service_protocol=$APMEC_PROTOCOL
+    if is_service_enabled tls-proxy; then
+        service_port=$APMEC_PORT_INT
+        service_protocol="http"
+    fi
+    # Start apmec conductor
+    run_process apmec-conductor "$APMEC_BIN_DIR/apmec-conductor $cfg_file_options"
+    # Start the Apmec service
+    run_process apmec "$APMEC_BIN_DIR/apmec-server $cfg_file_options"
+    echo "Waiting for Apmec to start..."
+    if is_ssl_enabled_service "apmec"; then
+        ssl_ca="--ca-certificate=${SSL_BUNDLE_FILE}"
+    fi
+    if ! timeout $SERVICE_TIMEOUT sh -c "while ! wget ${ssl_ca} --no-proxy -q -O- $service_protocol://$APMEC_HOST:$service_port; do sleep 1; done"; then
+        die $LINENO "Apmec did not start"
+    fi
+    # Start proxy if enabled
+    if is_service_enabled tls-proxy; then
+        start_tls_proxy '*' $APMEC_PORT $APMEC_HOST $APMEC_PORT_INT &
+    fi
+}
+
+# stop_apmec() - Stop running processes (non-screen)
+function stop_apmec {
+    stop_process apmec
+    stop_process apmec-conductor
+}
+
+# cleanup_apmec() - Remove residual data files, anything left over from previous
+# runs that a clean run would need to clean up
+function cleanup_apmec {
+    sudo rm -rf $APMEC_AUTH_CACHE_DIR
+}
+
+
+function _create_apmec_conf_dir {
+    # Put config files in ``APMEC_CONF_DIR`` for everyone to find
+    sudo install -d -o $STACK_USER $APMEC_CONF_DIR
+}
+
+# configure_apmec()
+# Set common config for all apmec server and agents.
+function configure_apmec {
+    _create_apmec_conf_dir
+
+    cd $APMEC_DIR
+    ./tools/generate_config_file_sample.sh
+    cd -
+
+    cp $APMEC_DIR/etc/apmec/apmec.conf.sample $APMEC_CONF
+
+    iniset_rpc_backend apmec $APMEC_CONF
+
+    iniset $APMEC_CONF database connection `database_connection_url $APMEC_DB_NAME`
+    iniset $APMEC_CONF DEFAULT state_path $DATA_DIR/apmec
+    iniset $APMEC_CONF DEFAULT use_syslog $SYSLOG
+
+    # Format logging
+    if [ "$LOG_COLOR" == "True" ] && [ "$SYSLOG" == "False" ]; then
+        setup_colorized_logging $APMEC_CONF DEFAULT project_id
+    else
+        # Show user_name and project_name by default like in nova
+        iniset $APMEC_CONF DEFAULT logging_context_format_string "%(asctime)s.%(msecs)03d %(levelname)s %(name)s [%(request_id)s %(user_name)s %(project_name)s] %(instance)s%(message)s"
+    fi
+
+    if is_service_enabled tls-proxy; then
+        # Set the service port for a proxy to take the original
+        iniset $APMEC_CONF DEFAULT bind_port "$APMEC_PORT_INT"
+    fi
+
+    if is_ssl_enabled_service "apmec"; then
+        ensure_certificates APMEC
+
+        iniset $APMEC_CONF DEFAULT use_ssl True
+        iniset $APMEC_CONF DEFAULT ssl_cert_file "$APMEC_SSL_CERT"
+        iniset $APMEC_CONF DEFAULT ssl_key_file "$APMEC_SSL_KEY"
+    fi
+
+    # server
+    APMEC_API_PASTE_FILE=$APMEC_CONF_DIR/api-paste.ini
+    APMEC_POLICY_FILE=$APMEC_CONF_DIR/policy.json
+
+    cp $APMEC_DIR/etc/apmec/api-paste.ini $APMEC_API_PASTE_FILE
+    cp $APMEC_DIR/etc/apmec/policy.json $APMEC_POLICY_FILE
+
+    # allow apmec user to administer apmec to match apmec account
+    sed -i 's/"context_is_admin":  "role:admin"/"context_is_admin":  "role:admin or user_name:apmec"/g' $APMEC_POLICY_FILE
+
+    iniset $APMEC_CONF DEFAULT debug $ENABLE_DEBUG_LOG_LEVEL
+    iniset $APMEC_CONF DEFAULT policy_file $APMEC_POLICY_FILE
+
+    iniset $APMEC_CONF DEFAULT auth_strategy $APMEC_AUTH_STRATEGY
+    _apmec_setup_keystone $APMEC_CONF keystone_authtoken
+
+    if [[ "${APMEC_MODE}" == "all" ]]; then
+        iniset "/$Q_PLUGIN_CONF_FILE" ml2 extension_drivers port_security
+        iniset "/$Q_PLUGIN_CONF_FILE" ml2_type_flat flat_networks $PUBLIC_PHYSICAL_NETWORK,$MGMT_PHYS_NET
+        iniset "/$Q_PLUGIN_CONF_FILE" ovs bridge_mappings $PUBLIC_PHYSICAL_NETWORK:$PUBLIC_BRIDGE,$MGMT_PHYS_NET:$BR_MGMT
+
+        # Experimental settings for monitor alarm auth settings,
+        # Will be changed according to new implementation.
+        iniset $APMEC_CONF alarm_auth username admin
+        iniset $APMEC_CONF alarm_auth password "$ADMIN_PASSWORD"
+        iniset $APMEC_CONF alarm_auth project_name admin
+        iniset $APMEC_CONF alarm_auth url http://$SERVICE_HOST:35357/v3
+
+        echo "Creating bridge"
+        sudo ovs-vsctl --may-exist add-br ${BR_MGMT}
+    fi
+    if [[ "${USE_BARBICAN}" == "True" ]]; then
+         iniset $APMEC_CONF vim_keys use_barbican True
+    fi
+    _apmec_setup_rootwrap
+}
+
+# Utility Functions
+#------------------
+
+# _apmec_deploy_rootwrap_filters() - deploy rootwrap filters to $APMEC_CONF_ROOTWRAP_D (owned by root).
+function _apmec_deploy_rootwrap_filters {
+    local srcdir=$1
+    sudo install -d -o root -m 755 $APMEC_CONF_ROOTWRAP_D
+    sudo install -o root -m 644 $srcdir/etc/apmec/rootwrap.d/* $APMEC_CONF_ROOTWRAP_D/
+}
+
+# _apmec_setup_rootwrap() - configure Apmec's rootwrap
+function _apmec_setup_rootwrap {
+    if [[ "$APMEC_USE_ROOTWRAP" == "False" ]]; then
+        return
+    fi
+    # Wipe any existing ``rootwrap.d`` files first
+    APMEC_CONF_ROOTWRAP_D=$APMEC_CONF_DIR/rootwrap.d
+    if [[ -d $APMEC_CONF_ROOTWRAP_D ]]; then
+        sudo rm -rf $APMEC_CONF_ROOTWRAP_D
+    fi
+
+    _apmec_deploy_rootwrap_filters $APMEC_DIR
+
+    sudo install -o root -g root -m 644 $APMEC_DIR/etc/apmec/rootwrap.conf $APMEC_RR_CONF_FILE
+    sudo sed -e "s:^filters_path=.*$:filters_path=$APMEC_CONF_ROOTWRAP_D:" -i $APMEC_RR_CONF_FILE
+    # Specify ``rootwrap.conf`` as first parameter to apmec-rootwrap
+    ROOTWRAP_SUDOER_CMD="$APMEC_ROOTWRAP $APMEC_RR_CONF_FILE *"
+
+    # Set up the rootwrap sudoers for apmec
+    TEMPFILE=`mktemp`
+    echo "$STACK_USER ALL=(root) NOPASSWD: $ROOTWRAP_SUDOER_CMD" >$TEMPFILE
+    chmod 0440 $TEMPFILE
+    sudo chown root:root $TEMPFILE
+    sudo mv $TEMPFILE /etc/sudoers.d/apmec-rootwrap
+
+    # Update the root_helper
+    iniset $APMEC_CONF agent root_helper "$APMEC_RR_COMMAND"
+}
+
+# Configures keystone integration for apmec service and agents
+function _apmec_setup_keystone {
+    local conf_file=$1
+    local section=$2
+    local use_auth_url=$3
+
+    # Configures keystone for metadata_agent
+    # metadata_agent needs auth_url to communicate with keystone
+    if [[ "$use_auth_url" == "True" ]]; then
+        iniset $conf_file $section auth_url $KEYSTONE_SERVICE_URI/v2.0
+    fi
+
+    create_apmec_cache_dir
+    configure_auth_token_middleware $conf_file $APMEC_ADMIN_USERNAME $APMEC_AUTH_CACHE_DIR $section
+}
+
+function mec_tosca_parser_install {
+   sudo pip install ${EXTRA_CUSTOM_BASE}/mec-tosca-parser.git
+}
+
+function mec_heat_translator_install {
+   sudo pip install ${EXTRA_CUSTOM_BASE}/mec-heat-translator.git
+
+}
+
+function apmec_horizon_install {
+    git_clone_by_name "apmec-horizon"
+    setup_dev_lib "apmec-horizon"
+    sudo cp $DEST/apmec-horizon/apmec_horizon/enabled/* $DEST/horizon/openstack_dashboard/enabled/
+    restart_apache_server
+}
+
+function apmec_client_install {
+    git_clone_by_name "python-apmecclient"
+    setup_dev_lib "python-apmecclient"
+    cd $DEST/python-apmecclient
+    sudo python setup.py install
+    cd $TOP_DIR
+}
+
+function openstack_image_create {
+    image=$1
+    disk_format=raw
+    container_format=bare
+    image_name=$2
+    openstack --os-cloud=devstack-admin image create $image_name --public --container-format=$container_format --disk-format $disk_format --file ${image}
+    openstack image show $image_name -f value -c id
+}
+
+function apmec_check_and_download_images {
+    local image_url
+    image_url[0]='http://download.cirros-cloud.net/0.3.5/cirros-0.3.5-x86_64-disk.img'
+    image_url[1]='https://downloads.openwrt.org/chaos_calmer/15.05/x86/kvm_guest/openwrt-15.05-x86-kvm_guest-combined-ext4.img.gz'
+
+    local image_fname image_name glance_name gz_pattern
+    local length=${#image_url[@]}
+    local index=0
+    while [ $index -lt $length ]
+    do
+        image_fname=`basename "${image_url[$index]}"`
+        glance_name=${image_fname%.*}
+        if [[ $glance_name =~ 'openwrt' ]]; then
+            glance_name='OpenWRT'
+        fi
+        image_name=`openstack image list | grep "$glance_name" | awk '{print $4}'`
+        if [[ $image_name == "" ]]; then
+            if [[ ! -f $FILES/$image_fname || "$(stat -c "%s" $FILES/$image_fname)" = "0" ]]; then
+                {
+                    wget --progress=dot:giga -c ${image_url[$index]} -O $FILES/$image_fname
+                    gz_pattern="\.gz$"
+                    if [[ $image_fname =~ $gz_pattern ]]; then
+                        new_image_fname=${image_fname%.*}
+                        gunzip -c $FILES/$image_fname > $FILES/$new_image_fname
+                        image_fname=$new_image_fname
+                    fi
+                    openstack_image_create $FILES/$image_fname $glance_name
+                }||{
+                    echo "ERROR: apmec image create for $image_fname failed"
+                    image_fname=$image_fname"*"
+                    sudo rm -rf $FILES/$image_fname
+                    exit 1
+                }
+            fi
+        fi
+        index=$(($index+1))
+    done
+}
+
+function apmec_create_initial_network {
+    # create necessary networks
+    # prepare network
+    echo "Deleting networks"
+    for net in ${NET_MGMT} ${NET0} ${NET1}
+    do
+        for i in $(openstack network list | awk "/${net}/{print \$2}")
+        do
+            openstack network delete $i
+        done
+    done
+
+    echo "Creating networks"
+    NET_MGMT_ID=$(openstack network create --provider-network-type flat --provider-physical-network ${MGMT_PHYS_NET} --share ${NET_MGMT} | awk '/ id /{print $4}')
+    SUBNET_MGMT_ID=$(openstack subnet create ${SUBNET_MGMT} --ip-version 4 --gateway ${NETWORK_GATEWAY_MGMT} --network ${NET_MGMT_ID} --subnet-range ${FIXED_RANGE_MGMT} | awk '/ id /{print $4}')
+    NET0_ID=$(openstack network create --share ${NET0} | awk '/ id /{print $4}')
+    SUBNET0_ID=$(openstack subnet create ${SUBNET0} --ip-version 4 --gateway ${NETWORK_GATEWAY0} --network ${NET0_ID} --subnet-range ${FIXED_RANGE0} | awk '/ id /{print $4}')
+    NET1_ID=$(openstack network create --share ${NET1} | awk '/ id /{print $4}')
+    SUBNET1_ID=$(openstack subnet create ${SUBNET1} --ip-version 4 --gateway ${NETWORK_GATEWAY1} --network ${NET1_ID} --subnet-range ${FIXED_RANGE1} | awk '/ id /{print $4}')
+
+    echo "Assign ip address to BR_MGMT"
+    sudo ip link set ${BR_MGMT} up
+    sudo ip -4 address flush dev ${BR_MGMT}
+    sudo ip address add ${NETWORK_GATEWAY_MGMT_IP} dev ${BR_MGMT}
+}
+
+function apmec_register_default_vim {
+    # Note: These must be the same as in apmec/tests/etc/samples/local-vim.yaml
+    # and devstack/lib/apmec/vim_config.yaml
+    DEFAULT_VIM_PROJECT_NAME="mec"
+    DEFAULT_VIM_USER="mec_user"
+    DEFAULT_VIM_PASSWORD="devstack"
+
+    echo "Create MEC VIM project $DEFAULT_VIM_PROJECT_NAME ..."
+    get_or_create_project $DEFAULT_VIM_PROJECT_NAME
+    echo "Create MEC VIM user $DEFAULT_VIM_USER ..."
+    get_or_create_user $DEFAULT_VIM_USER $DEFAULT_VIM_PASSWORD
+    get_or_add_user_project_role "admin" $DEFAULT_VIM_USER $DEFAULT_VIM_PROJECT_NAME
+    get_or_add_user_project_role "advsvc" $DEFAULT_VIM_USER $DEFAULT_VIM_PROJECT_NAME
+
+    echo "Register default VIM ..."
+    mkdir -p $DATA_DIR/apmec
+    cp $APMEC_DIR/devstack/vim_config.yaml $DATA_DIR/apmec
+    VIM_CONFIG_FILE="$DATA_DIR/apmec/vim_config.yaml"
+    sed -e "s|^auth_url:.*$|auth_url: \'${KEYSTONE_SERVICE_URI}\'|" -i $VIM_CONFIG_FILE
+    echo "The content of VIM config file $VIM_CONFIG_FILE :"
+    cat $VIM_CONFIG_FILE
+    local default_vim_id
+    DEFAULT_VIM_NAME="VIM0"
+
+    old_project=$OS_PROJECT_NAME
+    old_user=$OS_USERNAME
+    $TOP_DIR/tools/create_userrc.sh -P -u $DEFAULT_VIM_USER -C $DEFAULT_VIM_PROJECT_NAME -p $DEFAULT_VIM_PASSWORD
+    echo "Switch environment openrc:"
+    echo $(cat $TOP_DIR/accrc/$DEFAULT_VIM_PROJECT_NAME/$DEFAULT_VIM_USER)
+    . $TOP_DIR/accrc/$DEFAULT_VIM_PROJECT_NAME/$DEFAULT_VIM_USER
+
+    default_vim_id=$(apmec vim-register --is-default --description "Default VIM" --config-file $VIM_CONFIG_FILE $DEFAULT_VIM_NAME -c id | grep id | awk '{print $4}')
+    echo "Default VIM registration done as $default_vim_id at $KEYSTONE_SERVICE_URI."
+    echo "Switch back to old environment openrc:"
+    echo $(cat $TOP_DIR/accrc/$old_project/$old_user)
+    . $TOP_DIR/accrc/$old_project/$old_user
+
+    echo "Update apmec/tests/etc/samples/local-vim.yaml for functional testing"
+    functional_vim_file="$APMEC_DIR/apmec/tests/etc/samples/local-vim.yaml"
+    sed -e "s|^auth_url:.*$|auth_url: \'${KEYSTONE_SERVICE_URI}\'|" -i $functional_vim_file
+}
+
+function modify_heat_flavor_policy_rule {
+    local policy_file=$HEAT_CONF_DIR/policy.yaml
+    touch $policy_file
+    # Allow non-admin projects with 'admin' roles to create flavors in Heat
+    echo '"resource_types:OS::Nova::Flavor": "role:admin"' >> $policy_file
+}

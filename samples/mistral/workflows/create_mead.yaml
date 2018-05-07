@@ -1,0 +1,22 @@
+---
+version: '2.0'
+
+std.create_mead:
+  type: direct
+
+  description: |
+    Create a MEAD.
+
+  input:
+    - body
+  output:
+    mead_id: <% $.mead_id %>
+
+  tasks:
+    create_mead:
+      description: Request to create a MEAD.
+      action: apmec.create_mead body=<% $.body %>
+      input:
+        body: <% $.body %>
+      publish:
+        mead_id: <% task(create_mead).result.mead.id %>

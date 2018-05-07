@@ -1,0 +1,63 @@
+tosca_definitions_version: tosca_simple_profile_for_mec_1_0_0
+metadata:
+    template_name: sample-tosca-mead-for-meac
+
+topology_template:
+  node_templates:
+    firewall_meac:
+      type: tosca.nodes.mec.MEAC.Apmec
+      requirements:
+        - host: VDU1
+        - host: VDU2
+      interfaces:
+        Standard:
+            create: /home/bharatht/install_meac.sh
+
+    VDU1:
+      type: tosca.nodes.mec.VDU.Apmec
+      properties:
+        image: fedora-software-config
+        flavor: m1.small
+        mgmt_driver: noop
+        key_name: stack_key
+        config: |
+          param0: key1
+          param1: key2
+
+    CP1:
+      type: tosca.nodes.mec.CP.Apmec
+      properties:
+        management: true
+        anti_spoofing_protection: false
+      requirements:
+        - virtualLink:
+            node: VL1
+        - virtualBinding:
+            node: VDU1
+    VDU2:
+      type: tosca.nodes.mec.VDU.Apmec
+      properties:
+        image: fedora-software-config
+        flavor: m1.small
+        mgmt_driver: noop
+        key_name: stack_key
+        config: |
+          param0: key1
+          param1: key2
+
+    CP2:
+      type: tosca.nodes.mec.CP.Apmec
+      properties:
+        management: true
+        anti_spoofing_protection: false
+      requirements:
+        - virtualLink:
+            node: VL1
+        - virtualBinding:
+            node: VDU2
+
+    VL1:
+      type: tosca.nodes.mec.VL
+      properties:
+        network_name: private
+        vendor: Apmec

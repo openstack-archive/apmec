@@ -1,0 +1,68 @@
+#! /bin/sh
+### BEGIN INIT INFO
+# Provides:          apmec-server
+# Required-Start:    $remote_fs $syslog
+# Required-Stop:     $remote_fs $syslog
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: apmec-server
+# Description:       Provides the Apmec service
+### END INIT INFO
+
+set -e
+
+PIDFILE=/var/run/apmec/apmec-server.pid
+LOGFILE=/var/log/apmec/apmec-server.log
+
+DAEMON=/usr/bin/apmec-server
+DAEMON_ARGS="--log-file=$LOGFILE"
+DAEMON_DIR=/var/run
+
+ENABLED=true
+
+if test -f /etc/default/apmec-server; then
+  . /etc/default/apmec-server
+fi
+
+mkdir -p /var/run/apmec
+mkdir -p /var/log/apmec
+
+. /lib/lsb/init-functions
+
+export PATH="${PATH:+$PATH:}/usr/sbin:/sbin"
+export TMPDIR=/var/lib/apmec/tmp
+
+if [ ! -x ${DAEMON} ] ; then
+    exit 0
+fi
+
+case "$1" in
+  start)
+    test "$ENABLED" = "true" || exit 0
+    log_daemon_msg "Starting apmec server" "apmec-server"
+    start-stop-daemon -Sbmv --pidfile $PIDFILE --chdir $DAEMON_DIR --exec $DAEMON -- $DAEMON_ARGS
+    log_end_msg $?
+    ;;
+  stop)
+    test "$ENABLED" = "true" || exit 0
+    log_daemon_msg "Stopping apmec server" "apmec-server"
+    start-stop-daemon --stop --oknodo --pidfile ${PIDFILE}
+    log_end_msg $?
+    ;;
+  restart|force-reload)
+    test "$ENABLED" = "true" || exit 1
+    $0 stop
+    sleep 1
+    $0 start
+    ;;
+  status)
+    test "$ENABLED" = "true" || exit 0
+    status_of_proc -p $PIDFILE $DAEMON apmec-server && exit 0 || exit $?
+    ;;
+  *)
+    log_action_msg "Usage: /etc/init.d/apmec-server {start|stop|restart|force-reload|status}"
+    exit 1
+    ;;
+esac
+
+exit 0

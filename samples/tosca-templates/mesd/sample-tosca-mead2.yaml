@@ -1,0 +1,89 @@
+tosca_definitions_version: tosca_simple_profile_for_mec_1_0_0
+
+description: Demo example
+
+node_types:
+  tosca.nodes.mec.MEA2:
+    capabilities:
+      forwarder1:
+          type: tosca.capabilities.mec.Forwarder
+topology_template:
+  substitution_mappings:
+    node_type: tosca.nodes.mec.MEA2
+    capabilities:
+      forwarder1: [CP21, forwarder]
+  node_templates:
+    VDU1:
+      type: tosca.nodes.mec.VDU.Apmec
+      capabilities:
+        mec_compute:
+          properties:
+            disk_size: 10 GB
+            mem_size: 512 MB
+            num_cpus: 2
+      properties:
+        image: ubuntu-xenial
+        config_drive: true
+        key_name: mykey
+        availability_zone: nova
+        mgmt_driver: noop
+        config: |
+          param0: key1
+          param1: key2
+        mgmt_driver: noop
+        user_data_format: RAW
+        user_data: |
+          #!/bin/sh
+          echo "my hostname is `hostname`" > /tmp/hostname
+          df -h > /home/openwrt/diskinfo
+
+    CP21:
+      type: tosca.nodes.mec.CP.Apmec
+      properties:
+        management: true
+        anti_spoofing_protection: false
+      requirements:
+        - virtualLink:
+            node: VL1
+        - virtualBinding:
+            node: VDU1
+
+    VDU2:
+      type: tosca.nodes.mec.VDU.Apmec
+      capabilities:
+        mec_compute:
+          properties:
+            disk_size: 10 GB
+            mem_size: 512 MB
+            num_cpus: 2
+      properties:
+        image: ubuntu-xenial
+        config_drive: true
+        key_name: mykey
+        availability_zone: nova
+        mgmt_driver: noop
+        config: |
+          param0: key1
+          param1: key2
+        mgmt_driver: noop
+        user_data_format: RAW
+        user_data: |
+          #!/bin/sh
+          echo "my hostname is `hostname`" > /tmp/hostname
+          df -h > /home/openwrt/diskinfo
+
+    CP22:
+      type: tosca.nodes.mec.CP.Apmec
+      requirements:
+        - virtualLink:
+            node: VL1
+        - virtualBinding:
+            node: VDU2
+
+    VL1:
+      type: tosca.nodes.mec.VL
+      properties:
+        network_name: net_mes
+        vendor: Apmec
+
+

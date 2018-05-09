@@ -32,13 +32,7 @@ def _get_template(name):
 tosca_mead_openwrt = _get_template('test_tosca_openwrt.yaml')
 config_data = _get_template('config_data.yaml')
 update_config_data = _get_template('update_config_data.yaml')
-mead_scale_tosca_template = _get_template('tosca_scale.yaml')
-mead_alarm_respawn_tosca_template = _get_template(
-    'test_tosca_mead_alarm_respawn.yaml')
-mead_alarm_scale_tosca_template = _get_template(
-    'test_tosca_mead_alarm_scale.yaml')
-mead_alarm_multi_actions_tosca_template = _get_template(
-    'test_tosca_mead_alarm_multi_actions.yaml')
+
 mesd_tosca_template = yaml.safe_load(_get_template('tosca_mesd_template.yaml'))
 
 

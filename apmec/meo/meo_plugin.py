@@ -325,14 +325,6 @@ class MeoPlugin(meo_db_plugin.MeoPluginDb, mes_db.MESPluginDb):
         inner_mesd_dict = yaml.safe_load(mesd_yaml)
         mesd['meads'] = dict()
         LOG.debug('mesd_dict: %s', inner_mesd_dict)
-        # From import we can deploy both NS and MEC Application
-        nsd_imports = inner_mesd_dict['imports'].get('nsds')
-        vnffg_imports = inner_mesd_dict['imports'].get('vnffgds')
-        if nsd_imports:
-            mesd_dict['attributes']['nsds'] = nsd_imports
-        if vnffg_imports:
-            mesd_dict['attributes']['vnffgds'] = vnffg_imports
-
         # Deploy MEC applications
         mem_plugin = manager.ApmecManager.get_service_plugins()['MEM']
         mead_imports = inner_mesd_dict['imports']['meads']
@@ -421,29 +413,6 @@ class MeoPlugin(meo_db_plugin.MeoPluginDb, mes_db.MESPluginDb):
         driver_type = vim_res['vim_type']
         if not mes['mes']['vim_id']:
             mes['mes']['vim_id'] = vim_res['vim_id']
-
-        nsds = mesd['attributes'].get('nsds')
-        if nsds:
-            for nsd in nsds:
-                vim_obj = self.get_vim(context, mes['mes']['vim_id'], mask_password=False)
-                self._build_vim_auth(context, vim_obj)
-                client = tackerclient(vim_obj['auth_cred'])
-                ns_name = nsd + name
-                nsd_instance = client.nsd_get(nsd)
-                ns_arg = {'ns': {'nsd_id': nsd_instance, 'name': ns_name}}
-                ns_instance = client.ns_create(ns_arg)
-
-        vnffgds = mesd['attributes'].get('vnffgds')
-        if vnffgds:
-            for vnffgd in vnffgds:
-                vim_obj = self.get_vim(context, mes['mes']['vim_id'], mask_password=False)
-                self._build_vim_auth(context, vim_obj)
-                client = tackerclient(vim_obj['auth_cred'])
-                vnffgd_name = vnffgd + name
-                vnffgd_instance = client.vnffgd_get(vnffgd)
-                vnffg_arg = {'vnffg': {'vnffgd_id': vnffgd_instance, 'name': vnffgd_name}}
-                time.sleep(300)
-                vnffg_instance = client.vnffg_create(vnffg_arg)
 
         # Step-1
         param_values = mes['mes']['attributes'].get('param_values', {})

@@ -342,7 +342,7 @@ class OpenStack(abstract_driver.DeviceAbstractDriver,
                                      'error': str(e)}
                 LOG.warning(error_reason)
                 raise mem.MEAScaleWaitFailed(mea_id=policy['mea']['id'],
-                                              reason=error_reason)
+                                             reason=error_reason)
 
             if stack_retries == 0:
                 metadata = heatclient.resource_metadata(stack_id, policy_name)
@@ -360,7 +360,7 @@ class OpenStack(abstract_driver.DeviceAbstractDriver,
                                   self.STACK_RETRY_WAIT}
                 LOG.warning(error_reason)
                 raise mem.MEAScaleWaitFailed(mea_id=policy['mea']['id'],
-                                              reason=error_reason)
+                                             reason=error_reason)
             stack_retries -= 1
 
         def _fill_scaling_group_name():

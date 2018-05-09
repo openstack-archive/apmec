@@ -17,13 +17,13 @@ import re
 import sys
 import yaml
 
-from oslo_log import log as logging
-from toscaparser import properties
-from toscaparser.utils import yamlparser
-
 from apmec.common import log
 from apmec.common import utils
 from apmec.extensions import mem
+
+from oslo_log import log as logging
+from toscaparser import properties
+from toscaparser.utils import yamlparser
 
 from collections import OrderedDict
 
@@ -66,17 +66,17 @@ FLAVOR_EXTRA_SPECS_LIST = ('cpu_allocation',
                            'numa_nodes')
 
 delpropmap = {APMECVDU: ('mgmt_driver', 'config', 'service_type',
-                          'placement_policy', 'monitoring_policy',
-                          'metadata', 'failure_policy'),
+                         'placement_policy', 'monitoring_policy',
+                         'metadata', 'failure_policy'),
               APMECCP: ('management',)}
 
 convert_prop = {APMECCP: {'anti_spoofing_protection':
-                           'port_security_enabled',
-                           'type':
-                           'binding:vnic_type'}}
+                          'port_security_enabled',
+                          'type':
+                              'binding:vnic_type'}}
 
 convert_prop_values = {APMECCP: {'type': {'sriov': 'direct',
-                                           'vnic': 'normal'}}}
+                                          'vnic': 'normal'}}}
 
 deletenodes = (MONITORING, FAILURE, PLACEMENT)
 

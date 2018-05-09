@@ -18,25 +18,24 @@ import os
 import six
 import yaml
 
+from apmec._i18n import _
+from apmec.common import log
+from apmec.extensions import meo
+from apmec.keymgr import API as KEYMGR_API
+from apmec.mem import keystone
+from apmec.meo.drivers.vim import abstract_vim_driver
+from apmec.meo.drivers.workflow import workflow_generator
+from apmec.mistral import mistral_client
+
+
 from keystoneauth1 import exceptions
 from keystoneauth1 import identity
 from keystoneauth1.identity import v2
 from keystoneauth1.identity import v3
 from keystoneauth1 import session
-from neutronclient.common import exceptions as nc_exceptions
 from neutronclient.v2_0 import client as neutron_client
 from oslo_config import cfg
 from oslo_log import log as logging
-
-from apmec._i18n import _
-from apmec.common import log
-from apmec.extensions import meo
-from apmec.keymgr import API as KEYMGR_API
-from apmec.mistral import mistral_client
-from apmec.meo.drivers.vim import abstract_vim_driver
-from apmec.meo.drivers.workflow import workflow_generator
-from apmec.mem import keystone
-
 
 LOG = logging.getLogger(__name__)
 CONF = cfg.CONF

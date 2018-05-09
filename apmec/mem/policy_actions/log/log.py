@@ -12,12 +12,12 @@
 #    under the License.
 #
 
+from apmec.db.common_services import common_services_db_plugin
+from apmec.mem.policy_actions import abstract_action
+from apmec.plugins.common import constants
+
 from oslo_log import log as logging
 from oslo_utils import timeutils
-
-from apmec.db.common_services import common_services_db_plugin
-from apmec.plugins.common import constants
-from apmec.mem.policy_actions import abstract_action
 
 LOG = logging.getLogger(__name__)
 

@@ -4,5 +4,4 @@
 case $@ in
   (*--*) ostestr $@;;
   ('') ostestr;;
-  (*) ostestr --regex "$@"
 esac

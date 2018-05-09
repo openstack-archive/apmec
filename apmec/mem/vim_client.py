@@ -49,7 +49,7 @@ class VimClient(object):
         else:
             try:
                 vim_info = meo_plugin.get_vim(context, vim_id,
-                                               mask_password=False)
+                                              mask_password=False)
             except Exception:
                 raise meo.VimNotFoundException(vim_id=vim_id)
         LOG.debug('VIM info found for vim id %s', vim_id)

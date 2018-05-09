@@ -12,15 +12,14 @@
 
 import yaml
 
-from oslo_config import cfg
-from oslo_log import log as logging
-
 from apmec.common import rpc
+from apmec.mem import keystone
+from apmec.meo.workflows.vim_monitor import workflow_generator
 from apmec.mistral.actionrpc import kill_action as killaction
 from apmec.mistral import mistral_client
-from apmec.meo.workflows.vim_monitor import workflow_generator
-from apmec.mem import keystone
 
+from oslo_config import cfg
+from oslo_log import log as logging
 
 LOG = logging.getLogger(__name__)
 

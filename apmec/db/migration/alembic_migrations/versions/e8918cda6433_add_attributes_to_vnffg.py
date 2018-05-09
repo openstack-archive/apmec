@@ -26,8 +26,8 @@ revision = 'e8918cda6433'
 down_revision = '000632983ada'
 
 from alembic import op
-import sqlalchemy as sa
 from apmec.db.types import Json
+import sqlalchemy as sa
 
 
 def upgrade(active_plugins=None, options=None):

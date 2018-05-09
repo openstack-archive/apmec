@@ -19,11 +19,6 @@ import six
 import yaml
 
 import eventlet
-from oslo_config import cfg
-from oslo_log import log as logging
-from oslo_utils import excutils
-from oslo_utils import uuidutils
-from toscaparser.tosca_template import ToscaTemplate
 
 from apmec.api.v1 import attributes
 from apmec.common import driver_manager
@@ -31,12 +26,18 @@ from apmec.common import exceptions
 from apmec.common import utils
 from apmec.db.mem import mem_db
 from apmec.extensions import mem
-from apmec.plugins.common import constants
+
+from apmec.catalogs.tosca import utils as toscautils
 from apmec.mem.mgmt_drivers import constants as mgmt_constants
 from apmec.mem import monitor
 from apmec.mem import vim_client
+from apmec.plugins.common import constants
 
-from apmec.catalogs.tosca import utils as toscautils
+from oslo_config import cfg
+from oslo_log import log as logging
+from oslo_utils import excutils
+from oslo_utils import uuidutils
+from toscaparser.tosca_template import ToscaTemplate
 
 LOG = logging.getLogger(__name__)
 CONF = cfg.CONF
@@ -865,4 +866,4 @@ class MEMPlugin(mem_db.MEMPluginDb, MEMMgmtMixin):
         # Raise exception when MEA.status != ACTIVE
         else:
             raise mem.MEAInactive(mea_id=mea_id,
-                                   message=_(' Cannot fetch details'))
+                                  message=_(' Cannot fetch details'))

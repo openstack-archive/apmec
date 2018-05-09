@@ -10,8 +10,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from heatclient import client as heatclient
 from apmec.tests.functional import keystone
+from heatclient import client as heatclient
 
 
 class OpenstackClients(object):

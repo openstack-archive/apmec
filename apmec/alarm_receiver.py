@@ -11,12 +11,15 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+
+from apmec.mem.monitor_drivers.token import Token
+from apmec import wsgi
+
 from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_serialization import jsonutils
 from six.moves.urllib import parse
-from apmec.mem.monitor_drivers.token import Token
-from apmec import wsgi
+
 # check alarm url with db --> move to plugin
 
 

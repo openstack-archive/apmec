@@ -12,12 +12,13 @@
 #    under the License.
 #
 
+from apmec.common import utils
+from apmec.mem.monitor_drivers import abstract_driver
+
 from oslo_config import cfg
 from oslo_log import log as logging
 import random
 import string
-from apmec.common import utils
-from apmec.mem.monitor_drivers import abstract_driver
 
 
 LOG = logging.getLogger(__name__)

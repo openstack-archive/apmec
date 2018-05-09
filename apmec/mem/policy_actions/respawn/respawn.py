@@ -12,14 +12,14 @@
 #    under the License.
 #
 
-from oslo_log import log as logging
-from oslo_utils import timeutils
-
 from apmec.db.common_services import common_services_db_plugin
-from apmec.plugins.common import constants
 from apmec.mem.infra_drivers.openstack import heat_client as hc
 from apmec.mem.policy_actions import abstract_action
 from apmec.mem import vim_client
+from apmec.plugins.common import constants
+
+from oslo_log import log as logging
+from oslo_utils import timeutils
 
 LOG = logging.getLogger(__name__)
 

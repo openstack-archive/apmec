@@ -16,7 +16,8 @@
 #    under the License.
 
 # If ../apmec/__init__.py exists, add ../ to Python search path, so that
-# it will override what happens to be installed in /usr/(local/)tosca_lib/python...
+# it will override what happens to be installed in
+# /usr/(local/)tosca_lib/python...
 
 import sys
 

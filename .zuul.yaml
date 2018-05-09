@@ -1,0 +1,62 @@
+- job:
+    name: apmec-functional-devstack
+    parent: devstack
+    description: |
+      Base job for devstack-based functional tests
+    pre-run: playbooks/devstack/pre.yaml
+    run: playbooks/devstack/run.yaml
+    post-run: playbooks/devstack/post.yaml
+    roles:
+      - zuul: openstack-infra/devstack
+    timeout: 9000
+    required-projects:
+      - openstack/aodh
+      - openstack/horizon
+      - openstack/barbican
+      - openstack/ceilometer
+      - openstack/heat
+      - openstack/mistral
+      - openstack/mistral-dashboard
+      - openstack/python-barbicanclient
+      - openstack/python-mistralclient
+      - openstack/python-apmecclient
+      - openstack/apmec
+      - openstack/apmec-horizon
+    vars:
+      test_matrix_configs: [neutron]
+      devstack_services:
+        horizon: true
+        apmec: true
+        apmec-conductor: true
+        swift: false
+      devstack_plugins:
+        heat: https://git.openstack.org/openstack/heat
+        aodh: https://git.openstack.org/openstack/aodh
+        ceilometer: https://git.openstack.org/openstack/ceilometer
+        barbican: https://git.openstack.org/openstack/barbican
+        mistral: https://git.openstack.org/openstack/mistral
+        apmec: https://git.openstack.org/openstack/apmec
+      tox_install_siblings: false
+      tox_envlist: dsvm-functional
+      zuul_work_dir: src/git.openstack.org/openstack/apmec
+
+- job:
+    name: apmec-functional-devstack-python3
+    parent: apmec-functional-devstack
+    description: |
+      Run apmec functional tests using python3 against a master devstack
+    vars:
+      apmec_environment:
+        APMEC_TOX_PYTHON: python3
+
+- project:
+    check:
+      jobs:
+        - apmec-functional-devstack:
+            voting: false
+        - apmec-functional-devstack-python3:
+            voting: false
+        - openstack-tox-lower-constraints
+    gate:
+      jobs:
+        - openstack-tox-lower-constraints

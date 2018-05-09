@@ -10,10 +10,9 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from oslo_log import log as logging
-
-from apmec.mistral import workflow_generator
 from apmec.meo.workflows import vim_monitor
+from apmec.mistral import workflow_generator
+from oslo_log import log as logging
 
 LOG = logging.getLogger(__name__)
 

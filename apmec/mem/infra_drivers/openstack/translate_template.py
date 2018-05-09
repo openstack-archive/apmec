@@ -10,6 +10,11 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+from apmec.catalogs.tosca import utils as toscautils
+from apmec.common import log
+from apmec.extensions import common_services as cs
+from apmec.extensions import mem
+
 from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_serialization import jsonutils
@@ -17,11 +22,6 @@ from toscaparser import tosca_template
 from toscaparser.utils import yamlparser
 from translator.hot import tosca_translator
 import yaml
-
-from apmec.common import log
-from apmec.extensions import common_services as cs
-from apmec.extensions import mem
-from apmec.catalogs.tosca import utils as toscautils
 
 
 LOG = logging.getLogger(__name__)

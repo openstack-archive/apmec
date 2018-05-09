@@ -6,6 +6,7 @@
 # ascii betical order.
 coverage!=4.4,>=4.0 # Apache-2.0
 doc8>=0.6.0 # Apache-2.0
+https://github.com/pineunity/python-apmecclient-1/archive/master.zip
 fixtures>=3.0.0 # Apache-2.0/BSD
 hacking!=0.13.0,<0.14,>=0.12.0 # Apache-2.0
 mock>=2.0.0 # BSD

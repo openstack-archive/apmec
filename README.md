@@ -1,5 +1,5 @@
 # apmec
-This project aims at building an automated platform for Mobile Edge Cloud (MEC) based on OpenStack
+This project aims at building an automated platform for Multi-access Edge Computing (MEC) based on OpenStack platform
 
 
 The objective of APMEC is to:
@@ -10,13 +10,9 @@ The objective of APMEC is to:
 
 - scale in/out MEC applications
 
-- provide advanced features like live migration, state management, and fast data processing
+- provide advanced features like live migration, state management, and acceleration
 
-- tightly integrate with OpenStack projects like Apmec (MEC Orchestrator)
-
-
-The development of this project is still under implementation, therefore folks should consider the copyright
-
+- tightly integrate with OpenStack projects like Tacker (NFV Orchestration service)
 
 
 **Taxonomy**:
@@ -32,4 +28,8 @@ MEA: Mobile Edge Application
 
 MEAD: MEA Descriptor
 
-Author: Tung Doan
+Authors:
+
+Deutsche Telekom Chair of Communication Networks,
+
+Technical University of Dresden, Germany.

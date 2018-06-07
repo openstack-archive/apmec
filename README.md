@@ -18,13 +18,13 @@ The objective of APMEC is to:
 **Taxonomy**:
 
 
-MEP: Mobile Edge Platform
+MEP: MEC Platform
 
-MEM: Mobile Edge manager
+MEM: MEC Manager
 
-MEO: Mobile Edge Orchestrator
+MEO: MEC Orchestrator
 
-MEA: Mobile Edge Application
+MEA: MEC Application
 
 MEAD: MEA Descriptor
 

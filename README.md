@@ -1,9 +1,8 @@
 # apmec
-This project aims at building an automated provisioning framework for Multi-access Edge Computing (MEC) based on OpenStack platform
+This project aims at building an automated provisioning framework for Multi-access Edge Computing (MEC) based on OpenStack platform.
 
 
-.. figure:: doc/source/_extra/apmec.png
-   :alt: APMEC framework
+ ![alt text](https://github.com/openstack/apmec/blob/master/doc/source/_extra/apmec.jpg)
 
 
 Current features of APMEC are to:

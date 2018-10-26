@@ -1,0 +1,8 @@
+Code-Review+2: Tung Doan <doantungbk.203@gmail.com>
+Workflow+1: Tung Doan <doantungbk.203@gmail.com>
+Verified+2: Zuul
+Submitted-by: Zuul
+Submitted-at: Fri, 26 Oct 2018 16:48:19 +0000
+Reviewed-on: https://review.openstack.org/613569
+Project: openstack/apmec
+Branch: refs/heads/master

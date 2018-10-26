@@ -117,6 +117,7 @@ python-novaclient==9.1.0
 python-subunit==1.0.0
 python-swiftclient==3.5.0
 python-tackerclient==0.8.0
+python-apmecclient>=0.1.0
 pytz==2018.3
 PyYAML==3.12
 reno==2.7.0

@@ -37,9 +37,10 @@
    apmec.db.common_services.common_services_db_plugin.rst
    apmec.db.db_base.rst
    apmec.db.mem.mem_db.rst
+   apmec.db.meo.meca_db.rst
    apmec.db.meo.meo_db.rst
    apmec.db.meo.meo_db_plugin.rst
-   apmec.db.meo.mes_db.rst
+   apmec.db.meso.meso_db.rst
    apmec.db.migration.cli.rst
    apmec.db.migration.models.head.rst
    apmec.db.migration.purge_tables.rst
@@ -50,7 +51,7 @@
    apmec.extensions.common_services.rst
    apmec.extensions.mem.rst
    apmec.extensions.meo.rst
-   apmec.extensions.meo_plugins.edge_service.rst
+   apmec.extensions.meso.rst
    apmec.hacking.checks.rst
    apmec.keymgr.barbican_key_manager.rst
    apmec.keymgr.exception.rst
@@ -86,6 +87,9 @@
    apmec.meo.workflows.vim_monitor.vim_monitor_utils.rst
    apmec.meo.workflows.vim_monitor.vim_ping_action.rst
    apmec.meo.workflows.vim_monitor.workflow_generator.rst
+   apmec.meso.drivers.nfv_drivers.abstract_driver.rst
+   apmec.meso.drivers.nfv_drivers.tacker_driver.rst
+   apmec.meso.meso_plugin.rst
    apmec.mistral.actionrpc.kill_action.rst
    apmec.mistral.mistral_client.rst
    apmec.mistral.workflow_generator.rst

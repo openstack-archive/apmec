@@ -1,4 +1,4 @@
-# Copyright 2017 OpenStack Foundation
+# Copyright 2018 OpenStack Foundation
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
 #    not use this file except in compliance with the License. You may obtain
@@ -13,22 +13,32 @@
 #    under the License.
 #
 
-"""add_attributes_to_NANY
+"""mesd-table
 
-Revision ID: e8918cda6433
-Revises: 000632983ada
-Create Date: 2017-02-09 00:11:08.081746
+Revision ID: 20f6a08b066e
+Revises: 8206737b5c80
+Create Date: 2018-06-13 20:36:59.470322
 
 """
 
 # revision identifiers, used by Alembic.
-revision = 'e8918cda6433'
-down_revision = '000632983ada'
+revision = '20f6a08b066e'
+down_revision = '8206737b5c80'
 
 from alembic import op
 import sqlalchemy as sa
-from apmec.db.types import Json
+
+from apmec.db import types
 
 
 def upgrade(active_plugins=None, options=None):
-    op.add_column('NANYs', sa.Column('attributes', Json))
+   op.add_column('mesd',
+                  sa.Column('mesd_mapping',
+                           types.Json, nullable=True))
+   op.add_column('mes',
+                 sa.Column('mes_mapping',
+                           types.Json, nullable=True))
+
+   op.add_column('mes',
+                 sa.Column('reused',
+                           types.Json, nullable=True))

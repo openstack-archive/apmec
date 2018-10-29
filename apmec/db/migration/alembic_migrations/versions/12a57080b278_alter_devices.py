@@ -26,8 +26,8 @@ revision = '12a57080b278'
 down_revision = '12a57080b277'
 
 from alembic import op
-from apmec.db import migration
 from sqlalchemy.dialects import mysql
+from apmec.db import migration
 
 
 def upgrade(active_plugins=None, options=None):

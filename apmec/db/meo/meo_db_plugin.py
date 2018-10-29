@@ -10,15 +10,6 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from apmec.common import exceptions
-from apmec.db.common_services import common_services_db_plugin
-from apmec.db import db_base
-from apmec.db.mem import mem_db
-from apmec.db.meo import meo_db
-from apmec.extensions import meo
-from apmec import manager
-from apmec.plugins.common import constants
-
 from datetime import datetime
 
 from oslo_db.exception import DBDuplicateEntry
@@ -27,6 +18,15 @@ from oslo_utils import timeutils
 from oslo_utils import uuidutils
 from sqlalchemy.orm import exc as orm_exc
 from sqlalchemy import sql
+
+from apmec.common import exceptions
+from apmec.db.common_services import common_services_db_plugin
+from apmec.db import db_base
+from apmec.db.mem import mem_db
+from apmec.db.meo import meo_db
+from apmec.extensions import meo
+from apmec import manager
+from apmec.plugins.common import constants
 
 
 VIM_ATTRIBUTES = ('id', 'type', 'tenant_id', 'name', 'description',

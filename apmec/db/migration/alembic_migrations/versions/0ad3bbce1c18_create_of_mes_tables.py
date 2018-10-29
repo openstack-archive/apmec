@@ -40,7 +40,6 @@ def upgrade(active_plugins=None, options=None):
         sa.Column('deleted_at', sa.DateTime(), nullable=True),
         sa.Column('name', sa.String(length=255), nullable=False),
         sa.Column('description', sa.Text(), nullable=True),
-        sa.Column('meads', types.Json, nullable=True),
         sa.PrimaryKeyConstraint('id'),
         mysql_engine='InnoDB'
     )

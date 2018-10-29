@@ -86,116 +86,12 @@ class ToscaParserFailed(exceptions.InvalidInput):
     message = _("tosca-parser failed: - %(error_msg_details)s")
 
 
-class NfydInvalidTemplate(exceptions.InvalidInput):
-    message = _("Invalid NFY template input: %(template)s")
+class MECADInUse(exceptions.InUse):
+    message = _('MECAD %(mecad_id)s is still in use')
 
 
-class NfydDuplicateForwarderException(exceptions.InvalidInput):
-    message = _("Invalid Forwarding Path contains duplicate forwarder not in "
-                "order: %(forwarder)s")
-
-
-class NfydDuplicateCPException(exceptions.InvalidInput):
-    message = _("Invalid Forwarding Path contains duplicate connection point "
-                ": %(cp)s")
-
-
-class NfydCpNotFoundException(exceptions.NotFound):
-    message = _("Specified CP %(cp_id)s could not be found in MEAD "
-                "%(mead_name)s. Please check MEAD for correct Connection "
-                "Point.")
-
-
-class NfydCpNoForwardingException(exceptions.ApmecException):
-    message = _("Specified CP %(cp_id)s in MEAD %(mead_name)s "
-                "does not have forwarding capability, which is required to be "
-                "included in forwarding path")
-
-
-class NfydWrongEndpointNumber(exceptions.ApmecException):
-    message = _("Specified number_of_endpoints %(number)s is not equal to "
-                "the number of connection_point %(cps)s")
-
-
-class NfyInvalidMappingException(exceptions.ApmecException):
-    message = _("Matching MEA Instance for MEAD %(mead_name)s could not be "
-                "found. Please create an instance of this MEAD before "
-                "creating/updating NFY.")
-
-
-class NfyParamValueFormatError(exceptions.ApmecException):
-    message = _("Param values %(param_value)s is not in dict format.")
-
-
-class NfyParamValueNotUsed(exceptions.ApmecException):
-    message = _("Param input %(param_key)s not used.")
-
-
-class NfyCpNotFoundException(exceptions.NotFound):
-    message = _("Specified CP %(cp_id)s could not be found in MEA "
-                "%(mea_id)s.")
-
-
-class NfyMeaNotFoundException(exceptions.NotFound):
-    message = _("Specified MEA instance %(mea_name)s in MEA Mapping could not "
-                "be found")
-
-
-class NfpAttributeNotFoundException(exceptions.NotFound):
-    message = _('NFP attribute %(attribute)s could not be found')
-
-
-class NfpNotFoundException(exceptions.NotFound):
-    message = _('NFP %(nfp_id)s could not be found')
-
-
-class NfpInUse(exceptions.InUse):
-    message = _('NFP %(nfp_id)s is still in use')
-
-
-class NfpPolicyCriteriaError(exceptions.PolicyCheckError):
-    message = _('%(error)s in policy')
-
-
-class NfpPolicyNotFoundException(exceptions.NotFound):
-    message = _('Policy not found in NFP %(nfp)s')
-
-
-class NfpPolicyTypeError(exceptions.PolicyCheckError):
-    message = _('Unsupported Policy Type: %(type)s')
-
-
-class NfpForwarderNotFoundException(exceptions.NotFound):
-    message = _('MEAD Forwarder %(mead)s not found in MEA Mapping %(mapping)s')
-
-
-class NfpRequirementsException(exceptions.ApmecException):
-    message = _('MEAD Forwarder %(mead)s specified more than twice in '
-                'requirements path')
-
-
-class SfcInUse(exceptions.InUse):
-    message = _('SFC %(sfc_id)s is still in use')
-
-
-class SfcNotFoundException(exceptions.NotFound):
-    message = _('Service Function Chain %(sfc_id)s could not be found')
-
-
-class ClassifierInUse(exceptions.InUse):
-    message = _('Classifier %(classifier_id)s is still in use')
-
-
-class ClassifierNotFoundException(exceptions.NotFound):
-    message = _('Classifier %(classifier_id)s could not be found')
-
-
-class MESDInUse(exceptions.InUse):
-    message = _('MESD %(mesd_id)s is still in use')
-
-
-class MESInUse(exceptions.InUse):
-    message = _('MES %(mes_id)s is still in use')
+class MECAInUse(exceptions.InUse):
+    message = _('MECA %(meca_id)s is still in use')
 
 
 class NoTasksException(exceptions.ApmecException):
@@ -292,7 +188,8 @@ RESOURCE_ATTRIBUTE_MAP = {
             'is_visible': True,
         },
     },
-    'mesds': {
+
+    'mecads': {
         'id': {
             'allow_post': False,
             'allow_put': False,
@@ -347,7 +244,7 @@ RESOURCE_ATTRIBUTE_MAP = {
 
     },
 
-    'mess': {
+    'mecas': {
         'id': {
             'allow_post': False,
             'allow_put': False,
@@ -392,7 +289,7 @@ RESOURCE_ATTRIBUTE_MAP = {
             'is_visible': True,
             'default': '',
         },
-        'mesd_id': {
+        'mecad_id': {
             'allow_post': True,
             'allow_put': False,
             'validate': {'type:uuid': None},
@@ -431,15 +328,14 @@ RESOURCE_ATTRIBUTE_MAP = {
             'validate': {'type:dict_or_nodata': None},
             'is_visible': True,
         },
-        'mesd_template': {
+        'mecad_template': {
             'allow_post': True,
-            'allow_put': False,
+            'allow_put': True,
             'validate': {'type:dict_or_nodata': None},
             'is_visible': True,
             'default': None,
         },
     },
-
 }
 
 
@@ -524,3 +420,51 @@ class MEOPluginBase(service_base.MECPluginBase):
 
     def get_default_vim(self, context):
         raise NotImplementedError()
+
+
+@six.add_metaclass(abc.ABCMeta)
+class MECAPluginBase(service_base.MECPluginBase):
+
+    @abc.abstractmethod
+    def create_mecad(self, context, mecad):
+        pass
+
+    @abc.abstractmethod
+    def delete_mecad(self, context, mecad_id):
+        pass
+
+    @abc.abstractmethod
+    def get_mecad(self, context, mecad_id, fields=None):
+        pass
+
+    @abc.abstractmethod
+    def get_mecads(self, context, filters=None, fields=None):
+        pass
+
+    @abc.abstractmethod
+    def create_meca(self, context, meca):
+        pass
+
+    @abc.abstractmethod
+    def get_mecas(self, context, filters=None, fields=None):
+        pass
+
+    @abc.abstractmethod
+    def get_meca(self, context, meca_id, fields=None):
+        pass
+
+    @abc.abstractmethod
+    def delete_meca(self, context, meca_id):
+        pass
+
+    @abc.abstractmethod
+    def update_meca(self, context, meca_id, meca):
+        pass
+
+
+class MECADNotFound(exceptions.NotFound):
+    message = _('MECAD %(mecad_id)s could not be found')
+
+
+class MECANotFound(exceptions.NotFound):
+    message = _('MECA %(meca_id)s could not be found')

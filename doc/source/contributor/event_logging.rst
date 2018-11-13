@@ -55,7 +55,7 @@ Apmec supports display of events to an end user via
     - mead-events-list: List events that belong to a given MEAD.
 
 NOTE: For more details on the syntax of these CLIs, refer to
-`Apmec CLI reference guide <http://docs.openstack.org/cli-reference/apmec.html>`_
+`Apmec CLI reference guide <https://docs.openstack.org/cli-reference/apmec.html>`_
 
 Apmec Client command usage examples to access resource lifecycle events
 ------------------------------------------------------------------------

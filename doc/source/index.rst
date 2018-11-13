@@ -126,8 +126,8 @@ Project Info
 ============
 
 * **Free software:** under the `Apache license <http://www.apache.org/licenses/LICENSE-2.0>`_
-* **Apmec Service:** http://git.openstack.org/cgit/openstack/apmec
-* **Apmec Client Library:** http://git.openstack.org/cgit/openstack/python-apmecclient
+* **Apmec Service:** https://git.openstack.org/cgit/openstack/apmec
+* **Apmec Client Library:** https://git.openstack.org/cgit/openstack/python-apmecclient
 * **Apmec Service Bugs:** http://bugs.launchpad.net/apmec
 * **Client Bugs:** https://bugs.launchpad.net/python-apmecclient
 * **Blueprints:** https://blueprints.launchpad.net/apmec

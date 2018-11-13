@@ -118,7 +118,7 @@ availability zone and adding compute nodes.
 
    openstack aggregate add host MEC-AGG <MEC_HOST2>
 
-**NOTE**: Consult http://docs.openstack.org/cli-reference/nova.html for
+**NOTE**: Consult https://docs.openstack.org/cli-reference/nova.html for
 latest supported commands.
 
 Specifying Availability Zone for VDU in MEAD template

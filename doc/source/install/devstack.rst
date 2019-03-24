@@ -50,7 +50,7 @@ is the target branch, the <branch-name> is stable/pike.
     VERBOSE=True
     ENABLE_DEBUG_LOG_LEVEL=True
     ENABLE_VERBOSE_LOG_LEVEL=True
-    GIT_BASE=${GIT_BASE:-git://git.openstack.org}
+    GIT_BASE=${GIT_BASE:-https://git.openstack.org}
 
     APMEC_MODE=standalone
     USE_BARBICAN=True
